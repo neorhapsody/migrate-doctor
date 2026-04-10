@@ -8,6 +8,9 @@
 //! 2. Declare the module here and append your type to [`default_parsers`].
 //!
 //! Parsers are selected by file extension (first match in [`default_parsers`] order).
+//!
+//! **Rule ids** in [`Finding`](crate::model::Finding) should be `{parser-id}/{rule-suffix}` so
+//! they stay unique across parsers and match TOML `[rules]` keys.
 
 mod postgres_sql;
 

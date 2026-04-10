@@ -1,6 +1,7 @@
 //! PostgreSQL migration files parsed as SQL (`sqlparser`, PostgreSQL dialect).
 //!
-//! Add new rules in [`lint`] and wire any new statement shapes there.
+//! Add new rules in [`lint`] and wire any new statement shapes there. Rule ids use
+//! the form `postgres-sql/{suffix}` (same stem as [`MigrationParser::id`](crate::parsers::MigrationParser::id)).
 
 mod lint;
 mod parse;

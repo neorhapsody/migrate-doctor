@@ -1,0 +1,4 @@
+# Example: disable selected rules (omit a rule or set true = enabled)
+[rules]
+"postgres-sql/ban-drop" = false
+"postgres-sql/prefer-foreign-key-not-valid" = false
