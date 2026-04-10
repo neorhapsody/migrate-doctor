@@ -44,6 +44,33 @@ Use `migrate-doctor check --help` for full CLI help.
 - `0` — No findings with severity **error**, and (unless `--deny-warnings`) no need to fail on warnings.
 - `1` — At least one **error**, or any **warning** when `--deny-warnings` is set.
 
+## GitHub Actions
+
+This repository runs [`ci.yml`](.github/workflows/ci.yml) on pushes to `main` and on pull requests: `cargo test --locked` plus `migrate-doctor check` on the clean sample file `examples/migrations/002_ok.sql` (the `001_bad.sql` sample is intentionally violating rules and is not part of that check).
+
+To lint migrations in your own repo, add a workflow (adjust `db/migrations` to your path). Example using `cargo install` from Git:
+
+```yaml
+name: Lint migrations
+
+on:
+  pull_request:
+
+jobs:
+  migrate-doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install migrate-doctor
+        run: cargo install --git https://github.com/neorhapsody/migrate-doctor.git --locked
+      - name: Check SQL migrations
+        run: migrate-doctor check db/migrations --deny-warnings
+```
+
+Use `--config path/to/migrate-doctor.toml` on the last line if you disable rules locally.
+
 ## Configuration
 
 Optional TOML file passed with `--config`. Rules are **enabled** by default; set a rule to `false` to disable it.
@@ -75,8 +102,10 @@ With `--json`, each finding includes at least: `rule_id`, `severity`, `message`,
 
 ```bash
 cargo test
-cargo run -- check examples/migrations
+cargo run -- check examples/migrations/002_ok.sql
 ```
+
+`examples/migrations/001_bad.sql` is intentionally full of violations; use it to see output, not for a green check.
 
 ## Scope
 
