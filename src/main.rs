@@ -57,8 +57,8 @@ fn main() -> anyhow::Result<()> {
 
             let mut all = Vec::new();
             for path in &files {
-                let sql = fs::read_to_string(path)
-                    .with_context(|| format!("read {}", path.display()))?;
+                let sql =
+                    fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
                 let findings = match &cfg {
                     Some(c) => lint_sql_file_with_config(path, &sql, c),
                     None => lint_sql_file(path, &sql),

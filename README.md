@@ -48,7 +48,14 @@ Use `migrate-doctor check --help` for full CLI help.
 
 ## GitHub Actions
 
-This repository runs `[ci.yml](.github/workflows/ci.yml)` on pushes to `main` and on pull requests: `cargo test --locked` plus `migrate-doctor check` on the clean sample file `examples/migrations/002_ok.sql` (the `001_bad.sql` sample is intentionally violating rules and is not part of that check).
+This repository runs `[.github/workflows/ci.yml](.github/workflows/ci.yml)` on pushes to `main` and on pull requests. The job runs, in order:
+
+1. `cargo fmt --all -- --check` (requires `rustfmt`)
+2. `cargo clippy --locked --all-targets -- -D warnings` (requires `clippy`)
+3. `cargo test --locked`
+4. `cargo run --locked -- check examples/migrations/002_ok.sql`
+
+The `examples/migrations/001_bad.sql` sample is intentionally full of violations and is not part of that check.
 
 To lint migrations in your own repo, add a workflow (adjust `db/migrations` to your path). Example using `cargo install` from Git:
 
@@ -104,12 +111,18 @@ With `--json`, each finding includes at least: `rule_id`, `severity`, `message`,
 
 ## Development
 
+Before opening a PR, run the same checks as CI (install `rustfmt` and `clippy` with `rustup component add rustfmt clippy` if needed):
+
 ```bash
-cargo test
-cargo run -- check examples/migrations/002_ok.sql
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+cargo run --locked -- check examples/migrations/002_ok.sql
 ```
 
 `examples/migrations/001_bad.sql` is intentionally full of violations; use it to see output, not for a green check.
+
+Contributor notes for AI-assisted edits are in `[AGENTS.md](AGENTS.md)`.
 
 ## Scope
 

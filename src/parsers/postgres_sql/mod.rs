@@ -1,8 +1,3 @@
-//! PostgreSQL migration files parsed as SQL (`sqlparser`, PostgreSQL dialect).
-//!
-//! Add new rules in [`lint`] and wire any new statement shapes there. Rule ids use
-//! the form `postgres-sql/{suffix}` (same stem as [`MigrationParser::id`](crate::parsers::MigrationParser::id)).
-
 mod lint;
 mod parse;
 
@@ -10,8 +5,7 @@ use crate::model::Finding;
 use crate::parsers::MigrationParser;
 use std::path::Path;
 
-/// Linter for `.sql` files using the PostgreSQL dialect.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct PostgresSqlParser;
 
 impl MigrationParser for PostgresSqlParser {

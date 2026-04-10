@@ -1,5 +1,3 @@
-//! PostgreSQL SQL → sqlparser AST.
-
 use sqlparser::ast::Statement;
 use sqlparser::dialect::PostgreSqlDialect;
 use sqlparser::parser::Parser;

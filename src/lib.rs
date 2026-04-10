@@ -1,5 +1,3 @@
-//! Migration safety linter with pluggable parsers under [`parsers`].
-
 pub mod config;
 pub mod model;
 pub mod parsers;
@@ -7,12 +5,10 @@ pub mod parsers;
 pub use model::{Finding, Severity};
 use std::path::{Path, PathBuf};
 
-/// Lint the contents of a single migration file using registered parsers (by extension).
 pub fn lint_sql_file(path: &Path, sql: &str) -> anyhow::Result<Vec<Finding>> {
     parsers::lint_file_with_defaults(path, sql)
 }
 
-/// Lint a single file and apply [`config::Config`] (disabled rules are omitted from results).
 pub fn lint_sql_file_with_config(
     path: &Path,
     sql: &str,
@@ -22,7 +18,6 @@ pub fn lint_sql_file_with_config(
     Ok(cfg.filter_findings(findings))
 }
 
-/// Collect `.sql` files under `root` (non-recursive if `root` is a file).
 pub fn collect_sql_files(paths: &[PathBuf]) -> anyhow::Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     for p in paths {

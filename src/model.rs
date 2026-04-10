@@ -1,5 +1,3 @@
-//! Shared lint types.
-
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -16,8 +14,6 @@ pub struct Finding {
     pub severity: Severity,
     pub message: String,
     pub file: PathBuf,
-    /// 1-based line when known
     pub line: Option<u32>,
-    /// Which parser produced this (e.g. `postgres-sql`).
     pub parser_id: &'static str,
 }

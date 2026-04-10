@@ -1,22 +1,9 @@
-//! TOML configuration for enabling or disabling lint rules.
-//!
-//! Example `migrate-doctor.toml`:
-//!
-//! ```toml
-//! [rules]
-//! "postgres-sql/ban-drop" = false
-//! "postgres-sql/require-concurrent-index" = true
-//! ```
-//!
-//! Omitted rules default to **enabled**. Set a rule to `false` to disable it.
-
 use crate::model::Finding;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-/// Rule ids shipped by built-in parsers (for reference and tests).
 pub const KNOWN_RULE_IDS: &[&str] = &[
     "postgres-sql/require-concurrent-index",
     "postgres-sql/ban-drop",
@@ -31,7 +18,6 @@ pub struct Config {
 }
 
 impl Config {
-    /// Load from a TOML file. An empty file yields the default config (all rules on).
     pub fn from_path(path: &Path) -> anyhow::Result<Self> {
         let s = fs::read_to_string(path)
             .map_err(|e| anyhow::anyhow!("read config {}: {e}", path.display()))?;
@@ -47,12 +33,10 @@ impl Config {
         })
     }
 
-    /// Whether this rule should run. Missing entries default to `true`.
     pub fn rule_enabled(&self, rule_id: &str) -> bool {
         self.rules.get(rule_id).copied().unwrap_or(true)
     }
 
-    /// Drop findings for disabled rules.
     pub fn filter_findings(&self, findings: Vec<Finding>) -> Vec<Finding> {
         findings
             .into_iter()

@@ -1,5 +1,3 @@
-//! Rule checks over sqlparser `Statement` nodes (PostgreSQL-oriented).
-
 use crate::model::{Finding, Severity};
 use sqlparser::ast::{
     AlterTableOperation, ColumnOption, ObjectType, Spanned, Statement, TableConstraint,
@@ -8,7 +6,6 @@ use std::path::Path;
 
 pub(crate) const PARSER_ID: &str = "postgres-sql";
 
-/// Rule ids are `"{parser-id}/{rule-suffix}"` so configs and output stay parser-scoped.
 macro_rules! postgres_sql_rule {
     ($suffix:literal) => {
         concat!("postgres-sql/", $suffix)
@@ -105,8 +102,8 @@ pub(crate) fn lint_statement(stmt: &Statement, file: &Path) -> Vec<Finding> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::parse::parse_statements;
+    use super::*;
     use std::path::Path;
 
     fn lint_sql(path: &Path, sql: &str) -> Vec<Finding> {
