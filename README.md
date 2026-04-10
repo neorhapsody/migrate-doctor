@@ -31,11 +31,13 @@ migrate-doctor check ./db/migrations
 
 ### Flags
 
-| Flag | Meaning |
-|------|---------|
-| `--json` | Print a JSON array of findings to stdout (human-readable lines go to stderr unless this is set). |
-| `--deny-warnings` | Exit with status 1 if any **warning** is present (default: only **errors** fail the run). |
-| `--config PATH` | TOML file with per-rule enable/disable (see below). |
+
+| Flag              | Meaning                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| `--json`          | Print a JSON array of findings to stdout (human-readable lines go to stderr unless this is set). |
+| `--deny-warnings` | Exit with status 1 if any **warning** is present (default: only **errors** fail the run).        |
+| `--config PATH`   | TOML file with per-rule enable/disable (see below).                                              |
+
 
 Use `migrate-doctor check --help` for full CLI help.
 
@@ -46,7 +48,7 @@ Use `migrate-doctor check --help` for full CLI help.
 
 ## GitHub Actions
 
-This repository runs [`ci.yml`](.github/workflows/ci.yml) on pushes to `main` and on pull requests: `cargo test --locked` plus `migrate-doctor check` on the clean sample file `examples/migrations/002_ok.sql` (the `001_bad.sql` sample is intentionally violating rules and is not part of that check).
+This repository runs `[ci.yml](.github/workflows/ci.yml)` on pushes to `main` and on pull requests: `cargo test --locked` plus `migrate-doctor check` on the clean sample file `examples/migrations/002_ok.sql` (the `001_bad.sql` sample is intentionally violating rules and is not part of that check).
 
 To lint migrations in your own repo, add a workflow (adjust `db/migrations` to your path). Example using `cargo install` from Git:
 
@@ -87,12 +89,14 @@ An empty file is valid and leaves all rules enabled.
 
 ## Rules (parser `postgres-sql`)
 
-| Rule id | Default severity | What it flags |
-|---------|------------------|---------------|
-| `postgres-sql/require-concurrent-index` | error | `CREATE INDEX` without `CONCURRENTLY` |
-| `postgres-sql/ban-drop` | warning | `DROP` (wording depends on object type) |
-| `postgres-sql/adding-field-with-default` | warning | `ALTER TABLE ... ADD COLUMN ...` with a `DEFAULT` |
-| `postgres-sql/prefer-foreign-key-not-valid` | warning | `ALTER TABLE ... ADD ... FOREIGN KEY` (PostgreSQL `NOT VALID` is not represented in the parser; this is a general nudge) |
+
+| Rule id                                     | Default severity | What it flags                                                                                                            |
+| ------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `postgres-sql/require-concurrent-index`     | error            | `CREATE INDEX` without `CONCURRENTLY`                                                                                    |
+| `postgres-sql/ban-drop`                     | warning          | `DROP` (wording depends on object type)                                                                                  |
+| `postgres-sql/adding-field-with-default`    | warning          | `ALTER TABLE ... ADD COLUMN ...` with a `DEFAULT`                                                                        |
+| `postgres-sql/prefer-foreign-key-not-valid` | warning          | `ALTER TABLE ... ADD ... FOREIGN KEY` (PostgreSQL `NOT VALID` is not represented in the parser; this is a general nudge) |
+
 
 ## JSON output
 
