@@ -29,7 +29,14 @@ migrate-doctor check path/to/migration.sql
 migrate-doctor check ./db/migrations
 ```
 
-### Flags
+Print rule ids and default severities (for `[rules]` keys in TOML):
+
+```bash
+migrate-doctor list-rules
+migrate-doctor list-rules --json
+```
+
+### Flags (`check`)
 
 
 | Flag              | Meaning                                                                                          |
@@ -48,7 +55,7 @@ Use `migrate-doctor check --help` for full CLI help.
 
 ## GitHub Actions
 
-This repository runs `[.github/workflows/ci.yml](.github/workflows/ci.yml)` on pushes to `main` and on pull requests. The job runs, in order:
+This repository runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on pushes to `main` and on pull requests. The job runs, in order:
 
 1. `cargo fmt --all -- --check` (requires `rustfmt`)
 2. `cargo clippy --locked --all-targets -- -D warnings` (requires `clippy`)

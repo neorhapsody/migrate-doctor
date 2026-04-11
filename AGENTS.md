@@ -11,10 +11,11 @@ Context for humans and coding agents working in this repository.
 
 | Path                        | Role                                                                            |
 | --------------------------- | ------------------------------------------------------------------------------- |
-| `src/main.rs`               | `clap` CLI (`check` subcommand), exit codes, JSON/human output                  |
+| `src/main.rs`               | `clap` CLI (`check`, `list-rules`), exit codes, JSON/human output               |
 | `src/lib.rs`                | Public API: `lint_sql_file`, `lint_sql_file_with_config`, `collect_sql_files`   |
 | `src/model.rs`              | `Finding`, `Severity`                                                           |
-| `src/config.rs`             | TOML `[rules]` enable/disable, `KNOWN_RULE_IDS`                                 |
+| `src/rules/postgres/`       | Rule ids (`ids.rs`); add per-rule modules here as the set grows                 |
+| `src/config.rs`             | TOML `[rules]`, `RULE_CATALOG` / `KNOWN_RULE_IDS` (use ids from `rules::postgres`) |
 | `src/parsers/mod.rs`        | `MigrationParser` trait, `default_parsers()`, `lint_file` dispatch by extension |
 | `src/parsers/postgres_sql/` | Parser `postgres-sql`: `parse.rs` (sqlparser), `lint.rs` (rules)                |
 
@@ -23,7 +24,7 @@ New migration formats should be new modules under `src/parsers/`, implement `Mig
 
 ## Conventions
 
-- **Rule ids** must be `"{parser-id}/{rule-suffix}"` where `parser-id` matches `MigrationParser::id()` (e.g. `postgres-sql/require-concurrent-index`). Config keys in TOML need quotes when they contain `/`.
+- **Rule ids** for `postgres-sql` live in [`rules/postgres/ids.rs`](src/rules/postgres/ids.rs); add a `pub const`, append `RULE_IDS`, add a `ListedRule` in `config.rs`, and implement the check under `parsers/postgres_sql/` (or split into `rules/postgres/<name>.rs` when large). TOML keys with `/` need quotes.
 - **Findings** are produced for all rules first; `Config::filter_findings` removes disabled rules afterward (simple; optimize later if needed).
 - **Tests**: parser/rule tests live in `src/parsers/postgres_sql/lint.rs` under `#[cfg(test)]`; config tests in `src/config.rs`.
 - **Comments in code**: keep them **minimal**. Prefer clear names and structure over narration. Reserve comments for non-obvious rationale, invariants, or `///` on small public API surfaces where it helps callers. Avoid restating what the code already says, section banners, and large doc blocks on obvious helpers.
