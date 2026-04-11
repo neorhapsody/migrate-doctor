@@ -1,16 +1,11 @@
 use crate::model::{Finding, Severity};
+use crate::rules::postgres as rules;
 use sqlparser::ast::{
     AlterTableOperation, ColumnOption, ObjectType, Spanned, Statement, TableConstraint,
 };
 use std::path::Path;
 
 pub(crate) const PARSER_ID: &str = "postgres-sql";
-
-macro_rules! postgres_sql_rule {
-    ($suffix:literal) => {
-        concat!("postgres-sql/", $suffix)
-    };
-}
 
 pub(crate) fn stmt_line(stmt: &Statement) -> Option<u32> {
     let line = stmt.span().start.line;
@@ -29,7 +24,7 @@ pub(crate) fn lint_statement(stmt: &Statement, file: &Path) -> Vec<Finding> {
         Statement::CreateIndex(create) => {
             if !create.concurrently {
                 out.push(Finding {
-                    rule_id: postgres_sql_rule!("require-concurrent-index"),
+                    rule_id: rules::REQUIRE_CONCURRENT_INDEX,
                     severity: Severity::Error,
                     message: "CREATE INDEX without CONCURRENTLY can lock writes on large tables; use CREATE INDEX CONCURRENTLY in a separate transaction.".into(),
                     file: file.to_path_buf(),
@@ -51,7 +46,7 @@ pub(crate) fn lint_statement(stmt: &Statement, file: &Path) -> Vec<Finding> {
                 }
             };
             out.push(Finding {
-                rule_id: postgres_sql_rule!("ban-drop"),
+                rule_id: rules::BAN_DROP,
                 severity: Severity::Warning,
                 message: msg.into(),
                 file: file.to_path_buf(),
@@ -69,7 +64,7 @@ pub(crate) fn lint_statement(stmt: &Statement, file: &Path) -> Vec<Finding> {
                             .any(|o| matches!(o.option, ColumnOption::Default(_)));
                         if has_default {
                             out.push(Finding {
-                                rule_id: postgres_sql_rule!("adding-field-with-default"),
+                                rule_id: rules::ADDING_FIELD_WITH_DEFAULT,
                                 severity: Severity::Warning,
                                 message: "ADD COLUMN with DEFAULT may rewrite the whole table on PostgreSQL < 11 or be expensive on large tables; consider add nullable → backfill → set default.".into(),
                                 file: file.to_path_buf(),
@@ -81,7 +76,7 @@ pub(crate) fn lint_statement(stmt: &Statement, file: &Path) -> Vec<Finding> {
                     AlterTableOperation::AddConstraint(constraint) => {
                         if matches!(constraint, TableConstraint::ForeignKey { .. }) {
                             out.push(Finding {
-                                rule_id: postgres_sql_rule!("prefer-foreign-key-not-valid"),
+                                rule_id: rules::PREFER_FOREIGN_KEY_NOT_VALID,
                                 severity: Severity::Warning,
                                 message: "ADD FOREIGN KEY often validates all rows and can lock; prefer NOT VALID then VALIDATE CONSTRAINT in a follow-up migration.".into(),
                                 file: file.to_path_buf(),
@@ -120,7 +115,7 @@ mod tests {
         let sql = "CREATE INDEX idx_users_email ON users (email);";
         let f = lint_sql(Path::new("t.sql"), sql);
         assert_eq!(f.len(), 1);
-        assert_eq!(f[0].rule_id, postgres_sql_rule!("require-concurrent-index"));
+        assert_eq!(f[0].rule_id, rules::REQUIRE_CONCURRENT_INDEX);
     }
 
     #[test]
@@ -136,6 +131,6 @@ mod tests {
         let f = lint_sql(Path::new("t.sql"), sql);
         assert!(f
             .iter()
-            .any(|x| x.rule_id == postgres_sql_rule!("adding-field-with-default")));
+            .any(|x| x.rule_id == rules::ADDING_FIELD_WITH_DEFAULT));
     }
 }

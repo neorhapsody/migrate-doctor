@@ -1,7 +1,9 @@
 pub mod config;
 pub mod model;
 pub mod parsers;
+pub mod rules;
 
+pub use config::{ListedRule, RULE_CATALOG};
 pub use model::{Finding, Severity};
 use std::path::{Path, PathBuf};
 
