@@ -1,15 +1,41 @@
 use crate::model::Finding;
-use serde::Deserialize;
+use crate::rules::postgres as rules;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-pub const KNOWN_RULE_IDS: &[&str] = &[
-    "postgres-sql/require-concurrent-index",
-    "postgres-sql/ban-drop",
-    "postgres-sql/adding-field-with-default",
-    "postgres-sql/prefer-foreign-key-not-valid",
+#[derive(Debug, Serialize)]
+pub struct ListedRule {
+    pub id: &'static str,
+    pub severity: &'static str,
+    pub summary: &'static str,
+}
+
+pub const RULE_CATALOG: &[ListedRule] = &[
+    ListedRule {
+        id: rules::REQUIRE_CONCURRENT_INDEX,
+        severity: "error",
+        summary: "CREATE INDEX without CONCURRENTLY",
+    },
+    ListedRule {
+        id: rules::BAN_DROP,
+        severity: "warning",
+        summary: "DROP objects (wording depends on object type)",
+    },
+    ListedRule {
+        id: rules::ADDING_FIELD_WITH_DEFAULT,
+        severity: "warning",
+        summary: "ALTER TABLE ... ADD COLUMN ... with DEFAULT",
+    },
+    ListedRule {
+        id: rules::PREFER_FOREIGN_KEY_NOT_VALID,
+        severity: "warning",
+        summary: "ALTER TABLE ... ADD ... FOREIGN KEY",
+    },
 ];
+
+pub const KNOWN_RULE_IDS: &[&str] = rules::RULE_IDS;
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct Config {
@@ -48,6 +74,17 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn rule_catalog_matches_known_rule_ids() {
+        let a: HashSet<_> = RULE_CATALOG.iter().map(|r| r.id).collect();
+        let b: HashSet<_> = KNOWN_RULE_IDS.iter().copied().collect();
+        assert_eq!(
+            a, b,
+            "RULE_CATALOG and KNOWN_RULE_IDS must list the same rule ids"
+        );
+    }
 
     #[test]
     fn parses_rules_table() {
@@ -59,9 +96,9 @@ mod tests {
             "#,
         )
         .unwrap();
-        assert!(!cfg.rule_enabled("postgres-sql/ban-drop"));
-        assert!(cfg.rule_enabled("postgres-sql/require-concurrent-index"));
-        assert!(cfg.rule_enabled("postgres-sql/adding-field-with-default"));
+        assert!(!cfg.rule_enabled(rules::BAN_DROP));
+        assert!(cfg.rule_enabled(rules::REQUIRE_CONCURRENT_INDEX));
+        assert!(cfg.rule_enabled(rules::ADDING_FIELD_WITH_DEFAULT));
     }
 
     #[test]
@@ -75,7 +112,7 @@ mod tests {
         .unwrap();
         let findings = vec![
             Finding {
-                rule_id: "postgres-sql/ban-drop",
+                rule_id: rules::BAN_DROP,
                 severity: crate::model::Severity::Warning,
                 message: "x".into(),
                 file: "a.sql".into(),
@@ -83,7 +120,7 @@ mod tests {
                 parser_id: "postgres-sql",
             },
             Finding {
-                rule_id: "postgres-sql/require-concurrent-index",
+                rule_id: rules::REQUIRE_CONCURRENT_INDEX,
                 severity: crate::model::Severity::Error,
                 message: "y".into(),
                 file: "a.sql".into(),
@@ -93,6 +130,6 @@ mod tests {
         ];
         let kept = cfg.filter_findings(findings);
         assert_eq!(kept.len(), 1);
-        assert_eq!(kept[0].rule_id, "postgres-sql/require-concurrent-index");
+        assert_eq!(kept[0].rule_id, rules::REQUIRE_CONCURRENT_INDEX);
     }
 }

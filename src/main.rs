@@ -1,6 +1,6 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use migrate_doctor::config::Config;
+use migrate_doctor::config::{Config, RULE_CATALOG};
 use migrate_doctor::{collect_sql_files, lint_sql_file, lint_sql_file_with_config, Severity};
 use std::fs;
 use std::path::PathBuf;
@@ -15,6 +15,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Print built-in rule ids (for TOML `[rules]` keys)
+    ListRules {
+        /// Emit JSON array of rules to stdout
+        #[arg(long)]
+        json: bool,
+    },
     /// Lint SQL migration files
     Check {
         /// Files or directories to scan (.sql only)
@@ -38,6 +44,16 @@ enum Commands {
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
+        Commands::ListRules { json } => {
+            if json {
+                println!("{}", serde_json::to_string_pretty(RULE_CATALOG)?);
+            } else {
+                println!("rule_id\tseverity\tsummary");
+                for r in RULE_CATALOG {
+                    println!("{}\t{}\t{}", r.id, r.severity, r.summary);
+                }
+            }
+        }
         Commands::Check {
             paths,
             json,
