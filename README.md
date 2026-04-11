@@ -48,6 +48,8 @@ migrate-doctor list-rules --json
 
 Use `migrate-doctor check --help` for full CLI help.
 
+If a file is not valid **PostgreSQL-oriented** SQL for this parser, `check` exits with an error that includes the **file path**, the **sqlparser** message, and a short hint (the tool does not run migrations against a database).
+
 ### Exit status
 
 - `0` — No findings with severity **error**, and (unless `--deny-warnings`) no need to fail on warnings.

@@ -102,7 +102,7 @@ mod tests {
     use std::path::Path;
 
     fn lint_sql(path: &Path, sql: &str) -> Vec<Finding> {
-        let stmts = parse_statements(sql).unwrap();
+        let stmts = parse_statements(sql, path).unwrap();
         let mut findings = Vec::new();
         for stmt in &stmts {
             findings.extend(lint_statement(stmt, path));
