@@ -18,7 +18,7 @@ impl MigrationParser for PostgresSqlParser {
     }
 
     fn lint(&self, path: &Path, source: &str) -> anyhow::Result<Vec<Finding>> {
-        let stmts = parse::parse_statements(source)?;
+        let stmts = parse::parse_statements(source, path)?;
         let mut findings = Vec::new();
         for stmt in &stmts {
             findings.extend(lint::lint_statement(stmt, path));
