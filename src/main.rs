@@ -1,6 +1,7 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use migrate_doctor::{collect_sql_files, lint_sql_file, Severity};
+use migrate_doctor::config::Config;
+use migrate_doctor::{collect_sql_files, lint_sql_file, lint_sql_file_with_config, Severity};
 use std::fs;
 use std::path::PathBuf;
 
@@ -27,6 +28,10 @@ enum Commands {
         /// Treat warnings as errors (non-zero exit)
         #[arg(long)]
         deny_warnings: bool,
+
+        /// TOML config with [rules] table: "{parser-id}/{rule}" = true | false (omit = enabled)
+        #[arg(long, value_name = "PATH")]
+        config: Option<PathBuf>,
     },
 }
 
@@ -37,18 +42,28 @@ fn main() -> anyhow::Result<()> {
             paths,
             json,
             deny_warnings,
+            config,
         } => {
             let files = collect_sql_files(&paths).context("collect sql files")?;
             if files.is_empty() {
                 anyhow::bail!("no .sql files found under given paths");
             }
 
+            let cfg = config
+                .as_ref()
+                .map(|p| Config::from_path(p))
+                .transpose()
+                .context("load config file")?;
+
             let mut all = Vec::new();
             for path in &files {
-                let sql = fs::read_to_string(path)
-                    .with_context(|| format!("read {}", path.display()))?;
-                let findings = lint_sql_file(path, &sql)
-                    .with_context(|| format!("lint {}", path.display()))?;
+                let sql =
+                    fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
+                let findings = match &cfg {
+                    Some(c) => lint_sql_file_with_config(path, &sql, c),
+                    None => lint_sql_file(path, &sql),
+                }
+                .with_context(|| format!("lint {}", path.display()))?;
                 all.extend(findings);
             }
 
