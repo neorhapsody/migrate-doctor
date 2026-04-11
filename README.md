@@ -140,4 +140,4 @@ Contributor notes for AI-assisted edits are in `[AGENTS.md](AGENTS.md)`.
 
 ## License
 
-MIT. See `Cargo.toml`.
+MIT. See [`LICENSE`](LICENSE) and `Cargo.toml`.
