@@ -66,6 +66,10 @@ This repository runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on p
 
 The `examples/migrations/001_bad.sql` sample is intentionally full of violations and is not part of that check.
 
+## Releases
+
+[GitHub Releases](https://github.com/neorhapsody/migrate-doctor/releases) are produced by [cargo-dist](https://github.com/axodotdev/cargo-dist) via [`.github/workflows/release.yml`](.github/workflows/release.yml). Push a version tag such as `v0.1.0` (see that file for accepted patterns), with `version` in `Cargo.toml` matching the release. The workflow also runs `dist plan` on pull requests so release config stays valid. Release targets and `dist` version live in [`dist-workspace.toml`](dist-workspace.toml); after changing them, run `dist generate` and commit the updated workflow.
+
 To lint migrations in your own repo, add a workflow (adjust `db/migrations` to your path). Example using `cargo install` from Git:
 
 ```yaml
